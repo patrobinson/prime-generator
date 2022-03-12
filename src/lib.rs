@@ -44,27 +44,35 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
     router
         .get("/", |_, _| Response::ok("Hello from Workers!"))
         .get_async("/random", |_, _ctx| async move {
-            let mut hasher = Sha256::new();
-            let response = reqwest::get("https://drand.cloudflare.com/public/latest").await;
-            if let Err(e) = response {
-                return Response::error(format!("Invalid drand response {}", e), 500)
+            let rand = random().await;
+            if let Err(e) = rand {
+                return Response::error(e.to_string(), 500)
             }
-            
-            let v: DrandResponse = serde_json::from_str(&response.unwrap().text().await.unwrap()).unwrap();
-            let signature = v.signature;
-            hasher.update(signature);
-            let h = format!("{:X}", hasher.finalize());
-            let buf = Vec::from_hex(h).unwrap();
-            let (seed, _) = buf.split_array_ref::<32>();
 
-            let mut rng = ChaCha12Rng::from_seed(*seed);
-            let rand: u64 = rng.gen_range(0..100000000);
-
-            Response::ok(rand.to_string())
+            Response::ok(rand.unwrap().to_string())
         })
         .get("/worker-version", |_, ctx| {
             let version = ctx.var("WORKERS_RS_VERSION")?.to_string();
             Response::ok(version)
         })
         .run(req, env).await
+}
+
+async fn random() -> std::result::Result<u64, std::string::String> {
+    let mut hasher = Sha256::new();
+    let response = reqwest::get("https://drand.cloudflare.com/public/latest").await;
+    if let Err(e) = response {
+        let err = format!("Invalid drand response {}", e);
+        return Err(err)
+    }
+    
+    let v: DrandResponse = serde_json::from_str(&response.unwrap().text().await.unwrap()).unwrap();
+    let signature = v.signature;
+    hasher.update(signature);
+    let h = format!("{:X}", hasher.finalize());
+    let buf = Vec::from_hex(h).unwrap();
+    let (seed, _) = buf.split_array_ref::<32>();
+
+    let mut rng = ChaCha12Rng::from_seed(*seed);
+    Ok(rng.gen_range(0..100000000) as u64)
 }
