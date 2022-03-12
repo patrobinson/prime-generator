@@ -1,6 +1,10 @@
+#![feature(split_array)]
 use serde::{Deserialize, Serialize};
 use worker::*;
 use sha2::{Digest, Sha256};
+use rand::prelude::*;
+use rand_chacha::ChaCha12Rng;
+use hex::FromHex;
 
 mod utils;
 
@@ -50,8 +54,13 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
             let signature = v.signature;
             hasher.update(signature);
             let h = format!("{:X}", hasher.finalize());
+            let buf = Vec::from_hex(h).unwrap();
+            let (seed, _) = buf.split_array_ref::<32>();
 
-            Response::ok(h)
+            let mut rng = ChaCha12Rng::from_seed(*seed);
+            let rand: u64 = rng.gen_range(0..100000000);
+
+            Response::ok(rand.to_string())
         })
         .get("/worker-version", |_, ctx| {
             let version = ctx.var("WORKERS_RS_VERSION")?.to_string();
