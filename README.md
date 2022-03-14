@@ -1,15 +1,18 @@
 # Getting Started
 
-A template for kick starting a Cloudflare worker project using [`workers-rs`](https://github.com/cloudflare/workers-rs).
+An API for producing Prime numbers
 
-This template is designed for compiling Rust to WebAssembly and publishing the resulting worker to 
-Cloudflare's [edge infrastructure](https://www.cloudflare.com/network/).
+## Quick Start
 
-## Usage 
+In one window `wrangler dev`, then run:
+```
+$ curl http://127.0.0.1:8787/prime
+12421470606451032515201726749122029966273675768939641901540340457280749639703635750226674912339326203058040780967377506773970820045484808229265389394962121
+```
 
-This template starts you off with a `src/lib.rs` file, acting as an entrypoint for requests hitting
-your Worker. Feel free to add more code in this file, or create Rust modules anywhere else for this
-project to use. 
+## Usage
+
+Use Wrangler to deploy to Cloudflare Workers
 
 With `wrangler`, you can build, test, and deploy your Worker with the following commands: 
 
@@ -25,17 +28,3 @@ wrangler publish
 ```
 
 Read the latest `worker` crate documentation here: https://docs.rs/worker
-
-## WebAssembly
-
-`workers-rs` (the Rust SDK for Cloudflare Workers used in this template) is meant to be executed as 
-compiled WebAssembly, and as such so **must** all the code you write and depend upon. All crates and
-modules used in Rust-based Workers projects have to compile to the `wasm32-unknown-unknown` triple. 
-
-Read more about this on the [`workers-rs` project README](https://github.com/cloudflare/workers-rs).
-
-## Issues
-
-If you have any problems with the `worker` crate, please open an issue on the upstream project 
-issue tracker on the [`workers-rs` repository](https://github.com/cloudflare/workers-rs).
-

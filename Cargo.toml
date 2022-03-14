@@ -1,5 +1,5 @@
 [package]
-name = "rust-worker-http-router"
+name = "prime-generator"
 version = "0.1.0"
 authors = ["Patrick Robinson <patrick.robinson@envato.com>"]
 edition = "2018"
